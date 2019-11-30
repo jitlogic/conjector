@@ -25,23 +25,23 @@
           :else best)))))
 
 
-(defn deps->exact [{:keys [requires before]} deps]
+(defn deps->exact [deps]
   (let [debest (partial deps-best (map first deps))]
     (for [[n dm] deps
-          :let [dr (map debest (requires dm))]
-          :let [db (map debest (before dm))]]
-      [n {requires dr, before db}])))
+          :let [dr (map debest (:requires dm))]
+          :let [db (map debest (:before dm))]]
+      [n {:requires dr, :before db}])))
 
 
-(defn deps->pairs [{:keys [requires before]} deps]
+(defn exact->pairs [deps]
   "Converts dependency maps into one-way node pairs representing dependency graph"
   (let [deps (concat
-               (for [[p n] deps :let [ds (requires n)], d ds] [p d])
-               (for [[p n] deps :let [ds (before n)], d ds] [d p]))]
+               (for [[p n] deps :let [ds (:requires n)], d ds] [p d])
+               (for [[p n] deps :let [ds (:before n)], d ds] [d p]))]
     deps))
 
 
-(defn deps->seq [pairs]
+(defn pairs->seq [pairs]
   (dep/topo-sort
     (reduce
       #(dep/depend %1 (first %2) (second %2))
@@ -69,8 +69,8 @@
    "
   (let [nodes (filter #(proc-node? (second %))
                       (tree-seq path-map-node? path-map-children [[] procdef])),
-        nodes (deps->exact proc-args nodes),
-        proc-seq (-> (deps->pairs proc-args nodes) deps->seq)]
+        nodes (deps->exact nodes),
+        proc-seq (-> nodes deps->exact exact->pairs pairs->seq)]
     (reduce
       (fn [state [proc-fn args]]
         (assoc-in state (:path args) (proc-fn (assoc args :state (get-in state (:path args)), :all-state state))))

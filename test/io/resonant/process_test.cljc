@@ -9,9 +9,6 @@
   (into {:c (swap! counter inc), :cd (:test pdef), :all (:test all-data)} data))
 
 
-(def PROC-ARGS {:proc-node? :test, :requires :requires, :before :before})
-
-
 (def NODES-DP1
   [[[:a] {}]
    [[:b] {:requires [[:a :x]]}]
@@ -26,18 +23,18 @@
 
 
 (deftest test-deps-exact
-  (let [x (rcp/deps->exact PROC-ARGS NODES-DP1)]
+  (let [x (rcp/deps->exact NODES-DP1)]
     (is (= [[:a]] (-> x second second :requires)))))
 
 
 (deftest test-deps-pairs
   (is (= [[[:b] [:a :x]] [[:c] [:b]] [[:d] [:c]]]
-         (rcp/deps->pairs PROC-ARGS NODES-DP1))))
+         (rcp/exact->pairs NODES-DP1))))
 
 
 (deftest test-deps-seq
   (is (= [[:a] [:b] [:c] [:d]]
-         (rcp/deps->seq [[[:b] [:a]] [[:c] [:b]] [[:d] [:c]]]))))
+         (rcp/pairs->seq [[[:b] [:a]] [[:c] [:b]] [[:d] [:c]]]))))
 
 
 (def CDEFS
@@ -68,7 +65,7 @@
 
 (deftest test-process
   (let [log (atom []),
-        proc-args (assoc PROC-ARGS :proc-fn (partial test-proc-fn (atom 0) log)),
+        proc-args {:proc-node? :test :proc-fn (partial test-proc-fn (atom 0) log)},
         state (rcp/process proc-args CDEFS {:test :FOO-BAR, :a DATA-A, :b DATA-B})]
     (is (map? (:a state)))
     (are [c p]

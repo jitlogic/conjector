@@ -14,12 +14,11 @@
    :state - application state (built so far)
    :old-state - old application state
    :delayed - reference to delayed execution function that access two arguments: delay (milliseconds), function
-
    "
   (:require
     [io.resonant.conjector.process :as proc]))
 
-(def PROC-ARGS {:requires :requires, :before :before, :proc-node? :init})
+(def PROC-ARGS {:proc-node? :init})
 
 (defn- extract-pfn [map-fn defval v]
   (or (map-fn (:pdef v)) defval))
