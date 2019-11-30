@@ -32,9 +32,9 @@
     sysdef nil))
 
 
-(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state]} :data, :keys [state proc-args all-state]}]
+(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state]} :data, :keys [proc-args state all-state]}]
   (when init
-    (init {:config config, :old-state old-state, :delayed (:delayed proc-args), :all-state all-state, :init true})))
+    (init {:config config, :old-state old-state, :delayed (:delayed proc-args), :system all-state :state state, :init true})))
 
 (defn init [sysdef config old-state & {:keys [delayed]}]
   "Initializes or reloads application state. "
@@ -43,9 +43,9 @@
     sysdef {:config config, :old-state old-state}))
 
 
-(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [all-state]}]
+(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state all-state]}]
   (if shutdown
-    (shutdown {:config config, :old-state old-state, :all-state all-state, :shutdown true})
+    (shutdown {:config config, :old-state old-state, :state state :system all-state, :shutdown true})
     old-state))
 
 (defn shutdown [sysdef config old-state]

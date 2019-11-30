@@ -37,11 +37,11 @@
     :requires - dependencies (list of paths);
     :before - reverse dependencies (list of paths);
    Function proc-fn accepts argument map with following keys:
-    :state - state structure (built so far)
+    :state - local state structure (built so far)
     :all-state - full state structure (built so far)
     :path - path to element currently processed
     :pdef - processing definition
-    :data - input data related to currently processed element
+    :data - local input data
     :all-data - all input data
    "
   (let [nodes (filter #(proc-node? (second %))

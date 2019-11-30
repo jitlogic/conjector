@@ -3,24 +3,15 @@
 This library processes tree of components and associated data according to processing rules (defined as functions)
 in proper dependency order. 
 
+
+* schema verification is framework agnostic (prismatic.schema or clojure.spec), although conjector internally uses
+spec (as it is provided by clojure out of the box);
+
+
+
 ## Usage
 
 TBD
-
-
-## TODO list
-
-Layer 0 (processing):
-
-* simple implementation with direct dependencies
-
-  * full testing
-
-* detect unresolved dependencies
-
-* implement subpath dependencies
-
-* implement basic cross-cdef refs
 
 
 
