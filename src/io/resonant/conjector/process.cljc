@@ -1,4 +1,5 @@
 (ns io.resonant.conjector.process
+  "Basic application state processing."
   (:require
     [com.stuartsierra.dependency :as dep]))
 
@@ -11,14 +12,36 @@
   (for [[k v] m :when (map? v)] [(conj p k) v]))
 
 
-(defn dep-pairs [{:keys [requires before]} nodes]
+(defn deps-best [dset dp]
+  "Finds best matching dependency from `dset` that satisfies `dp`."
+  (let [dpc (count dp)]
+    (loop [best nil, [d0 & ds] dset]
+      (let [d0c (count d0)]
+        (cond
+          (= d0 dp) dp
+          (and (< d0c dpc) (= (take d0c dp) d0) (or (nil? best) (> d0c (count best)))) (recur d0 ds)
+          (some? ds) (recur best ds)
+          (nil? best) (throw (ex-info (str "Unsatisfied dependency: " dp " from: " dset) {:dep dp, :dset dset}))
+          :else best)))))
+
+
+(defn deps->exact [{:keys [requires before]} deps]
+  (let [debest (partial deps-best (map first deps))]
+    (for [[n dm] deps
+          :let [dr (map debest (requires dm))]
+          :let [db (map debest (before dm))]]
+      [n {requires dr, before db}])))
+
+
+(defn deps->pairs [{:keys [requires before]} deps]
+  "Converts dependency maps into one-way node pairs representing dependency graph"
   (let [deps (concat
-               (for [[p n] nodes :let [ds (requires n)], d ds] [p d])
-               (for [[p n] nodes :let [ds (before n)], d ds] [d p]))]
+               (for [[p n] deps :let [ds (requires n)], d ds] [p d])
+               (for [[p n] deps :let [ds (before n)], d ds] [d p]))]
     deps))
 
 
-(defn deps-seq [pairs]
+(defn deps->seq [pairs]
   (dep/topo-sort
     (reduce
       #(dep/depend %1 (first %2) (second %2))
@@ -45,18 +68,19 @@
     :all-data - all input data
    "
   (let [nodes (filter #(proc-node? (second %))
-                      (tree-seq path-map-node? path-map-children [[] procdef]))
-        proc-seq (-> (dep-pairs proc-args nodes) deps-seq)]
+                      (tree-seq path-map-node? path-map-children [[] procdef])),
+        nodes (deps->exact proc-args nodes),
+        proc-seq (-> (deps->pairs proc-args nodes) deps->seq)]
     (reduce
       (fn [state [proc-fn args]]
         (assoc-in state (:path args) (proc-fn (assoc args :state (get-in state (:path args)), :all-state state))))
       {}
       (for [path proc-seq]
         [proc-fn
-         {:path path
-          :pdef (get-in procdef path)
+         {:path      path
+          :pdef      (get-in procdef path)
           :proc-args proc-args
-          :data (into {} (for [[k v] data] {k (get-in v path)}))
-          :all-data data}]
+          :data      (into {} (for [[k v] data] {k (get-in v path)}))
+          :all-data  data}]
         ))))
 

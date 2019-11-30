@@ -1,4 +1,4 @@
-# conjector
+# Conjector
 
 This library processes tree of components and associated data according to processing rules (defined as functions)
 in proper dependency order. 
