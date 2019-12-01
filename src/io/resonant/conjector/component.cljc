@@ -34,9 +34,10 @@
     (merge
       cdef
       (loop [cur args, rslt {}]
-        (if (keyword? (first cur))
-          (recur (drop 2 cur) (assoc rslt (first cur) (second cur)))
-          (assoc rslt :init cur))))))
+        (cond
+          (keyword? (first cur)) (recur (drop 2 cur) (assoc rslt (first cur) (second cur)))
+          (empty? cur) rslt
+          :else (assoc rslt :init cur))))))
 
 
 (defmacro component [bindings & cargs]

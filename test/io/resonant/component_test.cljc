@@ -32,7 +32,9 @@
              :config-schema ::config, :state-schema ::state,
              :shutdown {:shut :down},
              (println "ojaaa")
-             {:init :comp}]))))
+             {:init :comp}])))
+  (is (= {:init :foo, :shutdown :bar}
+         (rcm/parse-component-args [:init :foo, :shutdown :bar]))))
 
 
 (deftest test-parse-component-macro

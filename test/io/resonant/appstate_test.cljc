@@ -40,8 +40,8 @@
 
 
 (deftest test-init-shutdown
-  (let [s1 (cap/init SYSTEM CONFIG-1 {})
-        s2 (cap/init SYSTEM CONFIG-2 s1)
+  (let [s1 (cap/init SYSTEM CONFIG-1 {} {})
+        s2 (cap/init SYSTEM CONFIG-2 s1 CONFIG-1)
         s3 (cap/shutdown SYSTEM CONFIG-2 s2)]
     (is (= {:a {:foo "foo-a", :bar nil},
             :b {:foo "foo-b", :bar nil},

@@ -34,17 +34,18 @@
     sysdef nil))
 
 
-(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state]} :data, :keys [proc-args state all-state] :as v}]
+(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state old-config]} :data, :keys [state all-state] :as v}]
   (when *tracing*
     (println "[conjector.appstate] init-pfn:" (:path v) "init-fn?" (some? init)))
   (when init
-    (init {:config config, :old-state old-state, :delayed (:delayed proc-args), :system all-state :state state, :init true})))
+    (init {:config config, :old-state old-state, :old-config old-config, :system all-state :state state, :init true})))
 
-(defn init [sysdef config old-state & {:keys [delayed]}]
+
+(defn init [sysdef config old-state old-config]
   "Initializes or reloads application state. "
   (proc/process
-    (assoc PROC-ARGS :proc-fn init-pfn, :delayed delayed)
-    sysdef {:config config, :old-state old-state}))
+    (assoc PROC-ARGS :proc-fn init-pfn)
+    sysdef {:config config, :old-state old-state, :old-config old-config}))
 
 
 (defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state all-state] :as v}]
