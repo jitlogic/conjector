@@ -16,11 +16,14 @@
    :delayed - reference to delayed execution function that access two arguments: delay (milliseconds), function
    "
   (:require
+    [io.resonant.conjector :refer [*tracing*]]
     [io.resonant.conjector.process :as proc]))
 
 (def PROC-ARGS {:proc-node? :init})
 
 (defn- extract-pfn [map-fn defval v]
+  (when *tracing*
+    (println "[conjector.appstate] extract-pfn:" (:path (:pdef v))))
   (or (map-fn (:pdef v)) defval))
 
 (defn extract [sysdef map-fn defval]
@@ -31,7 +34,9 @@
     sysdef nil))
 
 
-(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state]} :data, :keys [proc-args state all-state]}]
+(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state]} :data, :keys [proc-args state all-state] :as v}]
+  (when *tracing*
+    (println "[conjector.appstate] init-pfn:" (:path v) "init-fn?" (some? init)))
   (when init
     (init {:config config, :old-state old-state, :delayed (:delayed proc-args), :system all-state :state state, :init true})))
 
@@ -42,7 +47,9 @@
     sysdef {:config config, :old-state old-state}))
 
 
-(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state all-state]}]
+(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state all-state] :as v}]
+  (when *tracing*
+    (println "[conjector.appstate] shutdown-pfn:" (:path v) "shutfown-fn?" (some? shutdown)))
   (if shutdown
     (shutdown {:config config, :old-state old-state, :state state :system all-state, :shutdown true})
     old-state))

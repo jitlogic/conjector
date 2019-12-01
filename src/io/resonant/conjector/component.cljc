@@ -45,11 +45,11 @@
         {:keys [init init-fn shutdown shutdown-fn] :as pa} (parse-component-args cargs)
         rq (vec (concat (:requires pa) (:requires pb)))]
     (merge
+      (dissoc pa :init :init-fn :shutdown :shutdown-fn)
       (when init {:init `(fn [~args] ~@init)})
       (when init-fn {:init init-fn})
       (when shutdown {:shutdown `(fn [~args] ~@shutdown)})
       (when shutdown-fn {:shutdown shutdown-fn})
-      (select-keys pa [:doc :before :config-schema :state-schema])
       (when rq {:requires rq})
       )))
 

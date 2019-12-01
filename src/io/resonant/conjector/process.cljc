@@ -1,6 +1,7 @@
 (ns io.resonant.conjector.process
   "Basic application state processing."
   (:require
+    [io.resonant.conjector :refer [*tracing*]]
     [com.stuartsierra.dependency :as dep]))
 
 
@@ -48,10 +49,29 @@
       (dep/graph) pairs)))
 
 
-(defn process [{:keys [proc-node? proc-fn proc-order] :or {proc-order identity} :as proc-args} procdef data]
-  "Processes input data using rules defined in `procdef` and processing functions from `proc-args`.
-   Argument `procdef` is a hierarchical map, `data` is a map of input maps that will be used when
-   assembling resulting application state. Looks in `procdef` for nodes satisfying `proc-node?`,
+(defn process-order [{:keys [proc-node? proc-order] :or {proc-order identity} :as proc-args} sysdef]
+  (let [nodes (filter #(proc-node? (second %))
+                      (tree-seq path-map-node? path-map-children [[] sysdef])),
+        pairs (-> nodes deps->exact exact->pairs)
+        pairs-seq (pairs->seq pairs)
+        pairs-set (set pairs-seq)
+        loose-nodes (for [n (map first nodes) :when (not (contains? pairs-set n))]
+                      [n (or (:proc-order (get-in sysdef n)) 1000)])
+        loose-seq (map first (sort-by second loose-nodes))
+        proc-seq (concat loose-seq pairs-seq)]
+    (when *tracing*
+      (println "[conjector.process] nodes:" (vec (map first nodes)))
+      (println "[conjector.process] pairs: " (vec pairs))
+      (println "[conjector.process] pairs-seq: " (vec pairs-seq))
+      (println "[conjector.process] loose-seq: " (vec loose-seq))
+      (println "[conjector.process] proc-seq: " (vec proc-seq)))
+    (proc-order proc-seq)))
+
+
+(defn process [{:keys [proc-fn proc-order] :or {proc-order identity} :as proc-args} sysdef data]
+  "Processes input data using rules defined in `sysdef` and processing functions from `proc-args`.
+   Argument `sysdef` is a hierarchical map, `data` is a map of input maps that will be used when
+   assembling resulting application state. Looks in `sysdef` for nodes satisfying `proc-node?`,
    then processes them in order calculated from dependencies.
    Structure proc-args has following functions:
     :proc-node? - accepts node returns true if given node qualifies for processing
@@ -65,22 +85,18 @@
     :path - path to element currently processed
     :pdef - processing definition
     :data - local input data
-    :all-data - all input data
-   "
-  (let [nodes (filter #(proc-node? (second %))
-                      (tree-seq path-map-node? path-map-children [[] procdef])),
-        nodes (deps->exact nodes),
-        proc-seq (-> nodes deps->exact exact->pairs pairs->seq)]
+    :all-data - all input data"
+  (let [proc-seq (process-order proc-args sysdef)]
     (reduce
       (fn [state [proc-fn args]]
+        (when *tracing*
+          (println "[conjector.process] proc-fn: " (:path args)))
         (assoc-in state (:path args) (proc-fn (assoc args :state (get-in state (:path args)), :all-state state))))
       {}
       (for [path proc-seq]
         [proc-fn
          {:path      path
-          :pdef      (get-in procdef path)
+          :pdef      (get-in sysdef path)
           :proc-args proc-args
           :data      (into {} (for [[k v] data] {k (get-in v path)}))
-          :all-data  data}]
-        ))))
-
+          :all-data  data}]))))
