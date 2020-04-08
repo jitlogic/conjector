@@ -11,9 +11,12 @@
 
   Reload function return its part of application state and accepts map with following keys:
    :config - configuration
+   :old-config - old configuration
    :state - application state (built so far)
    :old-state - old application state
-   :delayed - reference to delayed execution function that access two arguments: delay (milliseconds), function
+   :system - full application state (all components built so far);
+   :init - true when in initialization/reload mode;
+   :shutdown - true when in shutdown mode;
    "
   (:require
     [io.resonant.conjector :refer [*tracing*]]

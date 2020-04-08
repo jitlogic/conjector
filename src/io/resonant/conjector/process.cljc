@@ -1,5 +1,5 @@
 (ns io.resonant.conjector.process
-  "Basic application state processing."
+  "Basic application state processing. See documentation of `process` function."
   (:require
     [io.resonant.conjector :refer [*tracing*]]
     [com.stuartsierra.dependency :as dep]))
