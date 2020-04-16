@@ -1,9 +1,8 @@
 (ns io.resonant.conjector.process
   "Basic application state processing. See documentation of `process` function."
   (:require
-    [io.resonant.conjector :refer [*tracing*]]
+    [io.resonant.conjector.trace :as ctrc :refer [trace]]
     [com.stuartsierra.dependency :as dep]))
-
 
 (defn- path-map-node? [[_ m]]
   (map? m))
@@ -59,12 +58,9 @@
                       [n (or (:proc-order (get-in sysdef n)) 1000)])
         loose-seq (map first (sort-by second loose-nodes))
         proc-seq (concat loose-seq pairs-seq)]
-    (when *tracing*
-      (println "[conjector.process] nodes:" (vec (map first nodes)))
-      (println "[conjector.process] pairs: " (vec pairs))
-      (println "[conjector.process] pairs-seq: " (vec pairs-seq))
-      (println "[conjector.process] loose-seq: " (vec loose-seq))
-      (println "[conjector.process] proc-seq: " (vec proc-seq)))
+    (trace 90 :conjector.process.process-order "nodes of sysdef tree" {:nodes nodes})
+    (trace 90 :conjector.process.process-order "intermediate data" {:pairs pairs, :pairs-seq pairs-seq, :loose-seq loose-seq})
+    (trace 70 :conjector.process.process-order "result data" {:proc-seq proc-seq})
     (proc-order proc-seq)))
 
 
@@ -89,8 +85,7 @@
   (let [proc-seq (process-order proc-args sysdef)]
     (reduce
       (fn [state [proc-fn args]]
-        (when *tracing*
-          (println "[conjector.process] proc-fn: " (:path args)))
+        (trace 70 :conjector.process.process "proc-fn arguments" {:proc-fn {:path args}})
         (assoc-in state (:path args) (proc-fn (assoc args :state (get-in state (:path args)), :all-state state))))
       {}
       (for [path proc-seq]

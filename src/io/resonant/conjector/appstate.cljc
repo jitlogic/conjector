@@ -19,14 +19,12 @@
    :shutdown - true when in shutdown mode;
    "
   (:require
-    [io.resonant.conjector :refer [*tracing*]]
+    [io.resonant.conjector.trace :refer [trace]]
     [io.resonant.conjector.process :as proc]))
 
 (def PROC-ARGS {:proc-node? :init})
 
 (defn- extract-pfn [map-fn defval v]
-  (when *tracing*
-    (println "[conjector.appstate] extract-pfn:" (:path (:pdef v))))
   (or (map-fn (:pdef v)) defval))
 
 (defn extract [sysdef map-fn defval]
@@ -38,8 +36,7 @@
 
 
 (defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state old-config]} :data, :keys [state all-state] :as v}]
-  (when *tracing*
-    (println "[conjector.appstate] init-pfn:" (:path v) "init-fn?" (some? init)))
+  (trace 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v), :init-fn? (some? init)})
   (when init
     (init {:config config, :old-state old-state, :old-config old-config, :system all-state :state state, :init true})))
 
@@ -52,11 +49,11 @@
 
 
 (defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state all-state] :as v}]
-  (when *tracing*
-    (println "[conjector.appstate] shutdown-pfn:" (:path v) "shutfown-fn?" (some? shutdown)))
+  (trace 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v), :shutdown-fn? (some? shutdown)})
   (if shutdown
     (shutdown {:config config, :old-state old-state, :state state :system all-state, :shutdown true})
     old-state))
+
 
 (defn shutdown [sysdef config old-state]
   (proc/process
