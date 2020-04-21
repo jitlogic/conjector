@@ -1,11 +1,13 @@
-(ns io.resonant.conjector.utils)
+(ns io.resonant.conjector.utils
+  (:require
+    [clojure.string :as cs]))
 
 (defn to-path [v]
   (cond
-    (vector? v) v
-    (symbol? v) (vec (map keyword (.split (name v) ":")))
-    (string? v) (vec (map keyword (.split v ":")))
-    (keyword? v) [v]
+    (vector? v) (vec (apply concat (map to-path v)))
+    (symbol? v) (vec (map keyword (cs/split (name v) #":")))
+    (string? v) (vec (map keyword (cs/split v #":")))
+    (keyword? v) (vec (for [s (cs/split (name v) #":")] (keyword s)))
     :else (throw (ex-info (str "Cannot convert to path: " v) {:arg v}))))
 
 (defn null-wrapper [_ f] (f))

@@ -7,4 +7,5 @@
   (is (= [:a :b :c] (rcu/to-path 'a:b:c)))
   (is (= [:a :b :c] (rcu/to-path [:a :b :c])))
   (is (= [:a :b :c] (rcu/to-path "a:b:c")))
-  (is (= [:a] (rcu/to-path :a))))
+  (is (= [:a] (rcu/to-path :a)))
+  (is (= [:a :b :c] (rcu/to-path :a:b:c))))
