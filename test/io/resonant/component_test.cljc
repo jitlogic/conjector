@@ -44,13 +44,13 @@
 (deftest test-parse-component-macro
   (let [c (rcm/component [{{:keys [foo bar], {:keys [cnt]} :stats} :system}]
             "Some doc"
-            :before [[:baz]], :requires [[:bag]]
+            :before [:baz:bak], :requires [:bag]
             :config-schema {:foo :any, :bar :any}
             :state-schema {:foo :str, :bar :str, :stats {:cnt :atom}}
             (swap! cnt inc)
             {:foo (str foo), :bar (str bar)})
         cnt (atom 0)]
-    (is (= [[:baz]] (:before c)))
+    (is (= [[:baz :bak]] (:before c)))
     (is (= [[:foo] [:bar] [:bag] [:stats :cnt]]) (:requires c))
     (is (= "Some doc" (:doc c)))
     (is (= {:foo :any, :bar :any}) (:config-schema c))

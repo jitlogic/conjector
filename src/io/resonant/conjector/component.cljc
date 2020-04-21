@@ -1,5 +1,7 @@
 (ns io.resonant.conjector.component
-  "Easy to use component definition macro.")
+  "Easy to use component definition macro."
+  (:require
+    [io.resonant.conjector.util :as cu]))
 
 (defn- merge-parse-results [m1 m2]
   {:args (merge (:args m1) (:args m2)),
@@ -43,14 +45,15 @@
 (defmacro component [bindings & cargs]
   "Creates a component. Automatically attaches dependency information and additional information."
   (let [{:keys [args] :as pb} (parse-component-bindings bindings),
-        {:keys [init init-fn shutdown shutdown-fn] :as pa} (parse-component-args cargs)
-        rq (vec (concat (:requires pa) (:requires pb)))]
+        {:keys [init init-fn shutdown shutdown-fn before requires] :as pa} (parse-component-args cargs)
+        rq (vec (map cu/to-path (concat requires (:requires pb))))]
     (merge
       (dissoc pa :init :init-fn :shutdown :shutdown-fn)
       (when init {:init `(fn [~args] ~init)})
       (when init-fn {:init init-fn})
       (when shutdown {:shutdown `(fn [~args] ~shutdown)})
       (when shutdown-fn {:shutdown shutdown-fn})
+      (when before {:before (vec (map cu/to-path before))})
       (when rq {:requires rq})
       )))
 
