@@ -1,7 +1,7 @@
-(ns io.resonant.utils-test
+(ns io.resonant.util-test
   (:require
     [clojure.test :refer :all]
-    [io.resonant.conjector.utils :as rcu]))
+    [io.resonant.conjector.util :as rcu]))
 
 (deftest test-to-path
   (is (= [:a :b :c] (rcu/to-path 'a:b:c)))

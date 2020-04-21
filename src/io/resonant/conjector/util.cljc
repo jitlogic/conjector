@@ -1,4 +1,4 @@
-(ns io.resonant.conjector.utils
+(ns io.resonant.conjector.util
   (:require
     [clojure.string :as cs]))
 
