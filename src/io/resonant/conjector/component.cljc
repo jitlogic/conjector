@@ -37,7 +37,7 @@
         (cond
           (keyword? (first cur)) (recur (drop 2 cur) (assoc rslt (first cur) (second cur)))
           (empty? cur) rslt
-          :else (assoc rslt :init cur))))))
+          :else (assoc rslt :init (if (= 1 (count cur)) (first cur) (cons 'do cur))))))))
 
 
 (defmacro component [bindings & cargs]
@@ -47,9 +47,9 @@
         rq (vec (concat (:requires pa) (:requires pb)))]
     (merge
       (dissoc pa :init :init-fn :shutdown :shutdown-fn)
-      (when init {:init `(fn [~args] ~@init)})
+      (when init {:init `(fn [~args] ~init)})
       (when init-fn {:init init-fn})
-      (when shutdown {:shutdown `(fn [~args] ~@shutdown)})
+      (when shutdown {:shutdown `(fn [~args] ~shutdown)})
       (when shutdown-fn {:shutdown shutdown-fn})
       (when rq {:requires rq})
       )))

@@ -21,11 +21,15 @@
 
 
 (deftest test-parse-component-args
+  (is (= {:init '(println "ojaaa")}
+         (rcm/parse-component-args '[:init (println "ojaaa")])))
+  (is (= {:init '(println "ojaaa")}
+         (rcm/parse-component-args '[(println "ojaaa")])))
   (is (= {:doc "DOC",
           :before [[:foo]], :requires [[:bar]],
           :config-schema ::config, :state-schema ::state,
           :shutdown {:shut :down},
-          :init '((println "ojaaa") {:init :comp})}
+          :init '(do (println "ojaaa") {:init :comp})}
          (rcm/parse-component-args
            '["DOC"
              :before [[:foo]], :requires [[:bar]],
