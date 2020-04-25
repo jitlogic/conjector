@@ -64,11 +64,11 @@ results from all previous steps, current node and parts of input data.
 
 Function `:proc-fn` returns part of state and accepts map with following keys:
 
-* `:all-state` - full state structure (built so far);
+* `:app-state` - full state structure (built so far);
 
 * `:path` - path to element currently processed;
 
-* `:state` - local state structure (built so far - `(get-in all-state path)`);
+* `:state` - local state structure (built so far - `(get-in app-state path)`);
 
 * `:pdef` - processing definition (`(get-in sysdefs path)`);
 
@@ -76,7 +76,7 @@ Function `:proc-fn` returns part of state and accepts map with following keys:
 
 * `:data` - local input data (`get-in all-data path`)
 
-Function result is merged with `all-state` using `path` (`(assoc-in all-state path process-result)`)
+Function result is merged with `app-state` using `path` (`(assoc-in app-state path process-result)`)
 
 ## Application state
 

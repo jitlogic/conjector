@@ -77,7 +77,7 @@
     :before - reverse dependencies (list of paths);
    Function proc-fn accepts argument map with following keys:
     :state - local state structure (built so far)
-    :all-state - full state structure (built so far)
+    :app-state - full state structure (built so far)
     :path - path to element currently processed
     :pdef - processing definition
     :data - local input data
@@ -86,7 +86,7 @@
     (reduce
       (fn [state [proc-fn args]]
         (trace 70 :conjector.process.process "proc-fn arguments" {:proc-fn {:path args}})
-        (assoc-in state (:path args) (proc-fn (assoc args :state (get-in state (:path args)), :all-state state))))
+        (assoc-in state (:path args) (proc-fn (assoc args :state (get-in state (:path args)), :app-state state))))
       {}
       (for [path proc-seq]
         [proc-fn

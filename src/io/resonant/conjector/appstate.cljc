@@ -35,10 +35,10 @@
     sysdef nil))
 
 
-(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state old-config]} :data, :keys [state all-state] :as v}]
+(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state old-config]} :data, :keys [state app-state] :as v}]
   (trace 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v), :init-fn? (some? init)})
   (when init
-    (init {:config config, :old-state old-state, :old-config old-config, :system all-state :state state, :init true})))
+    (init {:config config, :old-state old-state, :old-config old-config, :system app-state :state state, :init true})))
 
 
 (defn init [sysdef config old-state old-config]
@@ -48,10 +48,10 @@
     sysdef {:config config, :old-state old-state, :old-config old-config}))
 
 
-(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state all-state] :as v}]
+(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state app-state] :as v}]
   (trace 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v), :shutdown-fn? (some? shutdown)})
   (if shutdown
-    (shutdown {:config config, :old-state old-state, :state state :system all-state, :shutdown true})
+    (shutdown {:config config, :old-state old-state, :state state :system app-state, :shutdown true})
     old-state))
 
 
