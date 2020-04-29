@@ -10,11 +10,12 @@
    :before - reverse dependencies
 
   Reload function return its part of application state and accepts map with following keys:
-   :config - configuration
-   :old-config - old configuration
-   :state - application state (built so far)
-   :old-state - old application state
-   :system - full application state (all components built so far);
+   :config - component configuration
+   :old-config - old component configuration
+   :app-config - full configuration
+   :state - component state (built so far)
+   :old-state - old component state
+   :app-state - full application state (all components built so far);
    :init - true when in initialization/reload mode;
    :shutdown - true when in shutdown mode;
    "
@@ -35,10 +36,14 @@
     sysdef nil))
 
 
-(defn- init-pfn [{{:keys [init]} :pdef, {:keys [config old-state old-config]} :data, :keys [state app-state] :as v}]
+(defn- init-pfn [{{:keys [init]} :pdef,
+                  {:keys [config old-state old-config]} :data,
+                  {app-config :config} :all-data,
+                  :keys [state app-state] :as v}]
   (trace 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v), :init-fn? (some? init)})
   (when init
-    (init {:config config, :old-state old-state, :old-config old-config, :system app-state :state state, :init true})))
+    (init {:config config, :old-state old-state, :old-config old-config, :app-config app-config
+           :app-state app-state :state state, :init true})))
 
 
 (defn init [sysdef config old-state old-config]
@@ -48,10 +53,15 @@
     sysdef {:config config, :old-state old-state, :old-config old-config}))
 
 
-(defn- shutdown-pfn [{{:keys [shutdown]} :pdef {:keys [config old-state]} :data :keys [state app-state] :as v}]
+(defn- shutdown-pfn [{{:keys [shutdown]} :pdef,
+                      {:keys [config old-state]} :data
+                      {app-config :config} :all-data,
+                      :keys [state app-state] :as v}]
   (trace 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v), :shutdown-fn? (some? shutdown)})
   (if shutdown
-    (shutdown {:config config, :old-state old-state, :state state :system app-state, :shutdown true})
+    (shutdown {:config config, :app-config app-config,
+               :old-state old-state, :state state :app-state app-state,
+               :shutdown true})
     old-state))
 
 

@@ -16,8 +16,8 @@
 
 
 (deftest test-parse-component-bindings
-  (is (= '{:args {{:keys [foo bar]} :system}, :requires ([:foo] [:bar])}
-         (rcm/parse-component-bindings '[{{:keys [foo bar]} :system}]))))
+  (is (= '{:args {{:keys [foo bar]} :app-state}, :requires ([:foo] [:bar])}
+         (rcm/parse-component-bindings '[{{:keys [foo bar]} :app-state}]))))
 
 
 (deftest test-parse-component-args
@@ -42,7 +42,7 @@
 
 
 (deftest test-parse-component-macro
-  (let [c (rcm/component [{{:keys [foo bar], {:keys [cnt]} :stats} :system}]
+  (let [c (rcm/component [{{:keys [foo bar], {:keys [cnt]} :stats} :app-state}]
             "Some doc"
             :before [:baz:bak], :requires [:bag]
             :config-schema {:foo :any, :bar :any}
@@ -56,6 +56,6 @@
     (is (= {:foo :any, :bar :any}) (:config-schema c))
     (is (= {:foo :str, :bar :str, :stats {:cnt :atom}} (:state-schema c)))
     (is (fn? (:init c)))
-    (is (= {:foo "aj", :bar "waj"} ((:init c) {:system {:foo 'aj, :bar 'waj, :stats {:cnt cnt}}})))
+    (is (= {:foo "aj", :bar "waj"} ((:init c) {:app-state {:foo 'aj, :bar 'waj, :stats {:cnt cnt}}})))
     (is (= 1 @cnt))))
 

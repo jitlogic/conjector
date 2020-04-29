@@ -27,7 +27,7 @@
       (symbol? args) {:args args, :requires []}
       (map? args)
       (let [{:keys [args requires]} (parse-args-map [] args)]
-        {:args args, :requires (for [[r0 & rs] requires :when (= :system r0)] (vec rs))})
+        {:args args, :requires (for [[r0 & rs] requires :when (= :app-state r0)] (vec rs))})
       :else (ex-info (str "Not proper bindings: " (pr-str bindings)) {:bindings bindings}))))
 
 

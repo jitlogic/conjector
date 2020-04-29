@@ -64,7 +64,7 @@ results from all previous steps, current node and parts of input data.
 
 Function `:proc-fn` returns part of state and accepts map with following keys:
 
-* `:app-state` - full state structure (built so far);
+* `:system` - full state structure (built so far);
 
 * `:path` - path to element currently processed;
 
@@ -96,13 +96,16 @@ state and accepts a map with following keys:
 
 * `:config` - component configuration;
 
-* `:old-config` - old configuration;
+* `:old-config` - old component configuration;
+
+* `:app-config` - full application config;
 
 * `:state` - application state (built so far) - note that this is only part related to currently processed component;
 
-* `:old-state` - old application state;
+* `:old-state` - old component state;
 
-* `:system` - full application state;
+* `:app-state` - full application state;
+
 
 There are two public function sin this module:
 
