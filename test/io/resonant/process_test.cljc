@@ -12,23 +12,34 @@
 (def NODES-DP1
   [[[:a] {}]
    [[:b] {:requires [[:a :x]]}]
-   [[:c] {:requires [[:b]], :before [[:d]]}]
+   [[:c] {:requires [[:b]], :before [[:d :x]]}]
    [[:d] {}]])
 
 
+(def EXACT-DP1
+  [[[:a] {:requires [], :before []}]
+   [[:b] {:requires [[:a]], :before []}]
+   [[:c] {:requires [[:b]], :before [[:d]]}]
+   [[:d] {:requires [], :before []}]])
+
+
 (deftest test-deps-best
-  (is (= [:b] (rcp/deps-best [[:a] [:b] [:c]] [:b])))
-  (is (= [:b] (rcp/deps-best [[:a] [:b] [:c]] [:b :a])))
-  (is (= [:b :a] (rcp/deps-best [[:a] [:b] [:b :a] [:c]] [:b :a :c]))))
+  (testing "exact dependency"
+    (is (= [:b] (rcp/deps-best [[:a] [:b] [:c]] [:b]))))
+  (testing "inner dependency"
+    (is (= [:b] (rcp/deps-best [[:a] [:b] [:c]] [:b :foo]))))
+  (testing "inner dependency, two-level result"
+    (is (= [:b :a] (rcp/deps-best [[:a] [:b] [:b :a] [:c]] [:b :a :c])))))
 
 
 (deftest test-deps-exact
   (let [x (rcp/deps->exact NODES-DP1)]
+    (is (= x EXACT-DP1))
     (is (= [[:a]] (-> x second second :requires)))))
 
 
 (deftest test-deps-pairs
-  (is (= [[[:b] [:a :x]] [[:c] [:b]] [[:d] [:c]]]
+  (is (= [[[:b] [:a :x]] [[:c] [:b]] [[:d :x] [:c]]]
          (rcp/exact->pairs NODES-DP1))))
 
 
