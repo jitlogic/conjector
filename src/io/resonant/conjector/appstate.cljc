@@ -20,7 +20,7 @@
    :shutdown - true when in shutdown mode;
    "
   (:require
-    [io.resonant.conjector.trace :refer [trace]]
+    [io.resonant.conjector.debug :refer [debug]]
     [io.resonant.conjector.process :as proc]))
 
 (def PROC-ARGS {:proc-node? :init})
@@ -40,7 +40,7 @@
                   {:keys [config old-state old-config]} :data,
                   {app-config :config} :all-data,
                   :keys [state app-state] :as v}]
-  (trace 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v), :init-fn? (some? init)})
+  (debug 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v), :init-fn? (some? init)})
   (when init
     (init {:config config, :old-state old-state, :old-config old-config, :app-config app-config
            :app-state app-state :state state, :init true})))
@@ -57,7 +57,7 @@
                       {:keys [config old-state]} :data
                       {app-config :config} :all-data,
                       :keys [state app-state] :as v}]
-  (trace 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v), :shutdown-fn? (some? shutdown)})
+  (debug 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v), :shutdown-fn? (some? shutdown)})
   (if shutdown
     (shutdown {:config config, :app-config app-config,
                :old-state old-state, :state state :app-state app-state,
