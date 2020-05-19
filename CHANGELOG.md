@@ -8,3 +8,8 @@
 
 * component construction macro;
  
+
+## [0.0.2] - 2020-05-19
+
+* fixes, refactorings
+
