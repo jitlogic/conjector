@@ -22,6 +22,8 @@ state and accepts a map with following keys:
 
 * `:app-config` - full application configuration;
 
+* `:state` - application state (applicable only for shutdown);
+
 * `:old-state` - old component state;
 
 * `:app-state` - full application state (built so far);
@@ -30,8 +32,8 @@ state and accepts a map with following keys:
 
 * `:shutdown` - true when in shutdown mode;
 
-There are three functions implemented in this module. Function `init` builds or rebuilds application state by 
-initializing/reinitializing all components in proper order. Function `shutdown` destroys application state by  
+There are three functions implemented in this module. Function `app-init` builds or rebuilds application state by 
+initializing/reinitializing all components in proper order. Function `app-shutdown` destroys application state by  
 calling shutdown handlers on components (if any) in reverse order.
 
 ```clojure
@@ -45,18 +47,18 @@ calling shutdown handlers on components (if any) in reverse order.
 
 ; This will be suitable for initial configuration and subsequent reloads
 (let [conf (read-string (slurp "config.edn"))]
-  (reset! APP-STATE (irca/init @ircc/APP-DEF conf @APP-STATE @APP-CONF))
+  (reset! APP-STATE (irca/app-init @ircc/APP-DEF conf @APP-STATE @APP-CONF))
   (reset! APP-CONF conf))
 
 ; This will shut down application
-(shutdown @irca/APP-DEF @APP-CONF @APP-STATE)
+(irca/app-shutdown @irca/APP-DEF @APP-CONF @APP-STATE)
 ```
 
 Also, there is function `extract` that can be used to extract custom information from application definition data:
 
 ```clojure
-(extract @irca/APP-DEF (fn [node] (str (:doc node))) "Undocumented")
-(extract @irca/APP-DEF :config-schema schema.core/Any) 
+(irca/app-extract @irca/APP-DEF (fn [node] (str (:doc node))) "Undocumented")
+(irca/app-extract @irca/APP-DEF :config-schema schema.core/Any) 
 ```
 
 It accepts traverses application definition data and returns results of provided function on component mode combined
