@@ -1,40 +1,20 @@
 (ns io.resonant.conjector.appstate
-  "Provides a convention and a set of support functions for managing application state. Application state
-  is a hierarchical data structure (map) containing initialized runtime components. Application state is built
-  from system definition, configuration data and old state (if any).
-
-  Application state definition node contains following keys:
-   :init - mandatory init/reload function
-   :shutdown - shutdown function
-   :requires - dependencies
-   :before - reverse dependencies
-
-  Reload function return its part of application state and accepts map with following keys:
-   :config - component configuration
-   :old-config - old component configuration
-   :app-config - full configuration
-   :state - component state (built so far)
-   :old-state - old component state
-   :app-state - full application state (all components built so far);
-   :init - true when in initialization/reload mode;
-   :shutdown - true when in shutdown mode;
-   "
+  "Provides a convention and a set of support functions for managing application state."
   (:require
     [io.resonant.conjector.debug :refer [debug]]
     [io.resonant.conjector.process :as proc]))
 
-(def PROC-ARGS {:proc-node? :init})
+(def ^:private PROC-ARGS {:proc-node? :init})
 
 (defn- extract-pfn [map-fn defval v]
   (or (map-fn (:pdef v)) defval))
 
-(defn extract [sysdef map-fn defval]
+(defn extract [app-def map-fn defval]
   "Extracts some data from system definition. This is useful for building config/application
   state schemas, configuration defaults etc."
   (proc/process
     (assoc PROC-ARGS :proc-fn (partial extract-pfn map-fn defval))
-    sysdef nil))
-
+    app-def nil))
 
 (defn- init-pfn [{{:keys [init]} :pdef,
                   {:keys [config old-state old-config]} :data,
@@ -45,13 +25,11 @@
     (init {:config config, :old-state old-state, :old-config old-config, :app-config app-config
            :app-state app-state :state state, :init true})))
 
-
-(defn init [sysdef config old-state old-config]
+(defn init [app-def config old-state old-config]
   "Initializes or reloads application state. "
   (proc/process
     (assoc PROC-ARGS :proc-fn init-pfn)
-    sysdef {:config config, :old-state old-state, :old-config old-config}))
-
+    app-def {:config config, :old-state old-state, :old-config old-config}))
 
 (defn- shutdown-pfn [{{:keys [shutdown]} :pdef,
                       {:keys [config old-state]} :data
@@ -64,9 +42,7 @@
                :shutdown true})
     old-state))
 
-
-(defn shutdown [sysdef config old-state]
+(defn shutdown [app-def config old-state]
   (proc/process
     (assoc PROC-ARGS :proc-fn shutdown-pfn)
-    sysdef {:config config, :old-state old-state}))
-
+    app-def {:config config, :old-state old-state}))

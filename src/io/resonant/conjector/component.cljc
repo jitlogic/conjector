@@ -7,7 +7,7 @@
   {:args (merge (:args m1) (:args m2)),
    :requires (concat (:requires m1) (:requires m2))})
 
-(defn parse-args-map [path args]
+(defn- parse-args-map [path args]
   (reduce
     merge-parse-results
     (for [[k v] args]
@@ -20,8 +20,7 @@
         (= :as k) {:args {k v}}
         :else {:args {k v}, :requires [(conj path v)]}))))
 
-
-(defn parse-component-bindings [bindings]
+(defn- parse-component-bindings [bindings]
   (let [args (first bindings)]
     (cond
       (symbol? args) {:args args, :requires []}
@@ -30,8 +29,7 @@
         {:args args, :requires (for [[r0 & rs] requires :when (= :app-state r0)] (vec rs))})
       :else (ex-info (str "Not proper bindings: " (pr-str bindings)) {:bindings bindings}))))
 
-
-(defn parse-component-args [args]
+(defn- parse-component-args [args]
   (let [[cdef args] (if (string? (first args)) [{:doc (first args)} (rest args)] [{} args])]
     (merge
       cdef
@@ -40,7 +38,6 @@
           (keyword? (first cur)) (recur (drop 2 cur) (assoc rslt (first cur) (second cur)))
           (empty? cur) rslt
           :else (assoc rslt :init (if (= 1 (count cur)) (first cur) (cons 'do cur))))))))
-
 
 (defmacro component [bindings & cargs]
   "Creates a component. Automatically attaches dependency information and additional information."

@@ -7,12 +7,10 @@
 (defn- path-map-node? [[_ m]]
   (map? m))
 
-
 (defn- path-map-children [[p m]]
   (for [[k v] m :when (map? v)] [(conj p k) v]))
 
-
-(defn deps-best [dset dp]
+(defn- deps-best [dset dp]
   "Finds best matching dependency from `dset` that satisfies `dp`."
   (let [dpc (count dp)]
     (loop [best nil, [d0 & ds] dset]
@@ -24,50 +22,45 @@
           (nil? best) (throw (ex-info (str "Unsatisfied dependency: " dp " from: " dset) {:dep dp, :dset dset}))
           :else best)))))
 
-
-(defn deps->exact [deps]
+(defn- deps->exact [deps]
   (let [debest (partial deps-best (map first deps))]
     (for [[n dm] deps
           :let [dr (map debest (:requires dm))]
           :let [db (map debest (:before dm))]]
       [n {:requires dr, :before db}])))
 
-
-(defn exact->pairs [deps]
+(defn- exact->pairs [deps]
   "Converts dependency maps into one-way node pairs representing dependency graph"
   (let [deps (concat
                (for [[p n] deps :let [ds (:requires n)], d ds] [p d])
                (for [[p n] deps :let [ds (:before n)], d ds] [d p]))]
     deps))
 
-
-(defn pairs->seq [pairs]
+(defn- pairs->seq [pairs]
   (dep/topo-sort
     (reduce
       #(dep/depend %1 (first %2) (second %2))
       (dep/graph) pairs)))
 
-
-(defn process-order [{:keys [proc-node? proc-order] :or {proc-order identity} :as proc-args} sysdef]
+(defn- process-order [{:keys [proc-node? proc-order] :or {proc-order identity} :as proc-args} app-def]
   (let [nodes (filter #(proc-node? (second %))
-                      (tree-seq path-map-node? path-map-children [[] sysdef])),
+                      (tree-seq path-map-node? path-map-children [[] app-def])),
         pairs (-> nodes deps->exact exact->pairs)
         pairs-seq (pairs->seq pairs)
         pairs-set (set pairs-seq)
         loose-nodes (for [n (map first nodes) :when (not (contains? pairs-set n))]
-                      [n (or (:proc-order (get-in sysdef n)) 1000)])
+                      [n (or (:proc-order (get-in app-def n)) 1000)])
         loose-seq (map first (sort-by second loose-nodes))
         proc-seq (concat loose-seq pairs-seq)]
-    (debug 90 :conjector.process.process-order "nodes of sysdef tree" {:nodes nodes})
+    (debug 90 :conjector.process.process-order "nodes of app-def tree" {:nodes nodes})
     (debug 90 :conjector.process.process-order "intermediate data" {:pairs pairs, :pairs-seq pairs-seq, :loose-seq loose-seq})
     (debug 70 :conjector.process.process-order "result data" {:proc-seq proc-seq})
     (proc-order proc-seq)))
 
-
-(defn process [{:keys [proc-fn proc-order] :or {proc-order identity} :as proc-args} sysdef data]
-  "Processes input data using rules defined in `sysdef` and processing functions from `proc-args`.
-   Argument `sysdef` is a hierarchical map, `data` is a map of input maps that will be used when
-   assembling resulting application state. Looks in `sysdef` for nodes satisfying `proc-node?`,
+(defn process [{:keys [proc-fn proc-order] :or {proc-order identity} :as proc-args} app-def data]
+  "Processes input data using rules defined in `app-def` and processing functions from `proc-args`.
+   Argument `app-def` is a hierarchical map, `data` is a map of input maps that will be used when
+   assembling resulting application state. Looks in `app-def` for nodes satisfying `proc-node?`,
    then processes them in order calculated from dependencies.
    Structure proc-args has following functions:
 
@@ -94,7 +87,7 @@
     * `:data` - local input data
 
     * `:all-data` - all input data"
-  (let [proc-seq (process-order proc-args sysdef)]
+  (let [proc-seq (process-order proc-args app-def)]
     (reduce
       (fn [state [proc-fn args]]
         (debug 70 :conjector.process.process "proc-fn arguments" {:proc-fn {:path args}})
@@ -103,7 +96,7 @@
       (for [path proc-seq]
         [proc-fn
          {:path      path
-          :pdef      (get-in sysdef path)
+          :pdef      (get-in app-def path)
           :proc-args proc-args
           :data      (into {} (for [[k v] data] {k (get-in v path)}))
           :all-data  data}]))))

@@ -3,15 +3,12 @@
     [clojure.test :refer :all]
     [io.resonant.conjector.appstate :as cap]))
 
-
 (defn test-init [{:keys [config old-state]}]
   {:foo (:foo config),
    :bar (:foo old-state)})
 
-
 (defn test-shutdown [{:keys [old-state]}]
   (assoc old-state :shut :down))
-
 
 (def SYSTEM
   {:a {:init test-init, :shutdown test-shutdown, :schema :bar}
@@ -19,13 +16,11 @@
    :c {:init test-init, :schema :bag :requires [[:b]], :before [[:d]]}
    :d {:init test-init, :shutdown test-shutdown}})
 
-
 (def CONFIG-1
   {:a {:foo "foo-a"}
    :b {:foo "foo-b"}
    :c {:foo "foo-c"}
    :d {:foo "foo-d"}})
-
 
 (def CONFIG-2
   {:a {:foo "foo-1"}
@@ -33,11 +28,9 @@
    :c {:foo "foo-3"}
    :d {:foo "foo-4"}})
 
-
 (deftest test-extract-schema
   (is (= {:a :bar, :b :baz, :c :bag, :d :foo}
          (cap/extract SYSTEM :schema :foo))))
-
 
 (deftest test-init-shutdown
   (let [s1 (cap/init SYSTEM CONFIG-1 {} {})
@@ -58,4 +51,3 @@
             :c {:foo "foo-3", :bar "foo-c"},
             :d {:foo "foo-4", :bar "foo-d", :shut :down}}
            s3))))
-

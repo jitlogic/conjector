@@ -3,11 +3,9 @@
     [clojure.test :refer :all]
     [io.resonant.conjector.process :as rcp]))
 
-
 (defn test-proc-fn [counter log {:keys [path pdef data all-data]}]
   (swap! log conj path)
   (into {:c (swap! counter inc), :cd (:test pdef), :all (:test all-data)} data))
-
 
 (def NODES-DP1
   [[[:a] {}]
@@ -15,38 +13,32 @@
    [[:c] {:requires [[:b]], :before [[:d :x]]}]
    [[:d] {}]])
 
-
 (def EXACT-DP1
   [[[:a] {:requires [], :before []}]
    [[:b] {:requires [[:a]], :before []}]
    [[:c] {:requires [[:b]], :before [[:d]]}]
    [[:d] {:requires [], :before []}]])
 
-
 (deftest test-deps-best
   (testing "exact dependency"
-    (is (= [:b] (rcp/deps-best [[:a] [:b] [:c]] [:b]))))
+    (is (= [:b] (#'rcp/deps-best [[:a] [:b] [:c]] [:b]))))
   (testing "inner dependency"
-    (is (= [:b] (rcp/deps-best [[:a] [:b] [:c]] [:b :foo]))))
+    (is (= [:b] (#'rcp/deps-best [[:a] [:b] [:c]] [:b :foo]))))
   (testing "inner dependency, two-level result"
-    (is (= [:b :a] (rcp/deps-best [[:a] [:b] [:b :a] [:c]] [:b :a :c])))))
-
+    (is (= [:b :a] (#'rcp/deps-best [[:a] [:b] [:b :a] [:c]] [:b :a :c])))))
 
 (deftest test-deps-exact
-  (let [x (rcp/deps->exact NODES-DP1)]
+  (let [x (#'rcp/deps->exact NODES-DP1)]
     (is (= x EXACT-DP1))
     (is (= [[:a]] (-> x second second :requires)))))
 
-
 (deftest test-deps-pairs
   (is (= [[[:b] [:a :x]] [[:c] [:b]] [[:d :x] [:c]]]
-         (rcp/exact->pairs NODES-DP1))))
-
+         (#'rcp/exact->pairs NODES-DP1))))
 
 (deftest test-deps-seq
   (is (= [[:a] [:b] [:c] [:d]]
-         (rcp/pairs->seq [[[:b] [:a]] [[:c] [:b]] [[:d] [:c]]]))))
-
+         (#'rcp/pairs->seq [[[:b] [:a]] [[:c] [:b]] [[:d] [:c]]]))))
 
 (def SYSTEM1
   {:a {:test :foo}
@@ -57,14 +49,12 @@
        :2 {:test :e2, :before [[:d]]}}
    })
 
-
 (def DATA1
   {:a {:foo :bar}
    :b {:foo :baz}
    :c {:foo :bag}
    :e {:1 {:foo "e1"}
        :2 {:foo "e2"}}})
-
 
 (def DATA2
   {:a {:FOO "bar"}
@@ -73,7 +63,6 @@
    :e {:1 {:FOO "e1"}
        :2 {:FOO "e2"}}})
 
-
 (def SYSTEM2
   {:a {:test :foo, :proc-order 2}
    :b {:test :bar, :proc-order 1}
@@ -81,13 +70,11 @@
    :d {:test :bag, :requires [[:e]]}
    :e {:test :baf}})
 
-
 (deftest test-process-order
   (is (= [[:e :2] [:a] [:b] [:e :1] [:c] [:d]]
-         (rcp/process-order {:proc-node? :test} SYSTEM1)))
+         (#'rcp/process-order {:proc-node? :test} SYSTEM1)))
   (is (= [[:b] [:a] [:c] [:e] [:d]]
-         (rcp/process-order {:proc-node? :test} SYSTEM2))))
-
+         (#'rcp/process-order {:proc-node? :test} SYSTEM2))))
 
 (deftest test-process
   (let [log (atom []),
@@ -102,4 +89,3 @@
       4 [:e :1 :c]
       5 [:c :c]
       6 [:d :c])))
-
