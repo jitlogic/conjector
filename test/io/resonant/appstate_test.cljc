@@ -48,7 +48,7 @@
             :d {:foo "foo-4", :bar "foo-d"}}
            s2))
     (is (= {:a {:foo "foo-1", :bar "foo-a", :shut :down},
-            :b {:foo "foo-2", :bar "foo-b"},
-            :c {:foo "foo-3", :bar "foo-c"},
+            :b nil,
+            :c nil,
             :d {:foo "foo-4", :bar "foo-d", :shut :down}}
            s3))))

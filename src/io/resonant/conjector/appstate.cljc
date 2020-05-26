@@ -1,7 +1,7 @@
 (ns io.resonant.conjector.appstate
   "Provides a convention and a set of support functions for managing application state."
   (:require
-    [io.resonant.conjector :refer [app-component?]]
+    [io.resonant.conjector :refer [app-component? init shutdown]]
     [io.resonant.conjector.debug :refer [debug]]
     [io.resonant.conjector.process :as proc]))
 
@@ -17,14 +17,12 @@
     (assoc PROC-ARGS :proc-fn (partial extract-pfn map-fn defval))
     app-def nil))
 
-(defn- init-pfn [{{:keys [init]} :pdef,
-                  {:keys [config old-state old-config]} :data,
+(defn- init-pfn [{{:keys [config old-state old-config]} :data,
                   {app-config :config} :all-data,
-                  :keys [state app-state] :as v}]
-  (debug 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v), :init-fn? (some? init)})
-  (when init
-    (init {:config config, :old-state old-state, :old-config old-config, :app-config app-config
-           :app-state app-state :state state, :init true})))
+                  :keys [pdef state app-state] :as v}]
+  (debug 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v)})
+  (init pdef {:config config, :old-state old-state, :old-config old-config, :app-config app-config
+         :app-state app-state :state state, :init true}))
 
 (defn app-init [app-def config old-state old-config]
   "Initializes or reloads application state. "
@@ -32,16 +30,12 @@
     (assoc PROC-ARGS :proc-fn init-pfn)
     app-def {:config config, :old-state old-state, :old-config old-config}))
 
-(defn- shutdown-pfn [{{:keys [shutdown]} :pdef,
-                      {:keys [config old-state]} :data
+(defn- shutdown-pfn [{{:keys [config old-state]} :data
                       {app-config :config} :all-data,
-                      :keys [state app-state] :as v}]
-  (debug 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v), :shutdown-fn? (some? shutdown)})
-  (if shutdown
-    (shutdown {:config config, :app-config app-config,
-               :old-state old-state, :state state :app-state app-state,
-               :shutdown true})
-    old-state))
+                      :keys [pdef state app-state] :as v}]
+  (debug 90 :conjector.appstate.shutdown-pfn "shutdown PFN" {:shutdown-pfn (:path v)})
+  (shutdown pdef {:config config, :app-config app-config, :shutdown true,
+                  :old-state old-state, :state state :app-state app-state}))
 
 (defn app-shutdown [app-def config old-state]
   (proc/process
