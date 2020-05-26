@@ -54,6 +54,23 @@
       (when shutdown {:shutdown `(fn [~args] ~shutdown)})
       (when shutdown-fn {:shutdown shutdown-fn})
       (when before {:before (vec (map cu/to-path before))})
-      (when rq {:requires rq})
-      )))
+      (when rq {:requires rq}))))
+
+(defonce APP-DEF (atom {}))
+
+(defonce APP-DEVMODE
+  (atom
+    {:changes-num 0,
+     :changes-ack 0,
+     :nscheck-fn nil,
+     :reload-fn nil}))
+
+(defn defcomponent* [path component]
+  (swap! APP-DEF assoc-in path component)
+  (swap! APP-DEVMODE update :changes-num inc))
+
+(defmacro defcomponent [name bindings & args]
+  (if (symbol? name)
+    `(def ~name (defcomponent* (cu/to-path '~name) (component ~bindings ~@args)))
+    `(defcomponent* (cu/to-path '~name) (component ~bindings ~@args))))
 

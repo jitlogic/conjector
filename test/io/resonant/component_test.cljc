@@ -59,3 +59,21 @@
     (is (= {:foo "aj", :bar "waj"} ((:init c) {:app-state {:foo 'aj, :bar 'waj, :stats {:cnt cnt}}})))
     (is (= 1 @cnt))))
 
+(rcm/defcomponent foo:bar [{{:keys [foo bar], {:keys [cnt]} :stats} :app-state}]
+  "Some doc"
+  :before [:baz:bak], :requires [:bag]
+  :config-schema {:foo :any, :bar :any}
+  :state-schema {:foo :str, :bar :str, :stats {:cnt :atom}}
+  (swap! cnt inc)
+  {:foo (str foo), :bar (str bar)})
+
+(deftest test-defcomponent
+  (let [c (get-in @rcm/APP-DEF [:foo :bar])]
+    (is (map? c))
+    (is (= [[:baz :bak]] (:before c)))
+    (is (= [[:foo] [:bar] [:bag] [:stats :cnt]]) (:requires c))
+    (is (= "Some doc" (:doc c)))
+    (is (= {:foo :any, :bar :any}) (:config-schema c))
+    (is (= {:foo :str, :bar :str, :stats {:cnt :atom}} (:state-schema c)))
+    (is (fn? (:init c))))
+  (is (map? foo:bar)))
