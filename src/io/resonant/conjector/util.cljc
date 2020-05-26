@@ -10,7 +10,3 @@
     (keyword? v) (vec (for [s (cs/split (name v) #":")] (keyword s)))
     :else (throw (ex-info (str "Cannot convert to path: " v) {:arg v}))))
 
-(defn null-wrapper [_ f] (f))
-
-(defmacro with-wrapper [wrapper args & body]
-  `((or ~wrapper null-wrapper) ~args (fn [] ~@body)))
