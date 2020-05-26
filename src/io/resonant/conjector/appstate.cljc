@@ -1,15 +1,16 @@
 (ns io.resonant.conjector.appstate
   "Provides a convention and a set of support functions for managing application state."
   (:require
+    [io.resonant.conjector :refer [app-component?]]
     [io.resonant.conjector.debug :refer [debug]]
     [io.resonant.conjector.process :as proc]))
 
-(def ^:private PROC-ARGS {:proc-node? :init})
+(def ^:private PROC-ARGS {:proc-node? app-component?})
 
 (defn- extract-pfn [map-fn defval v]
   (or (map-fn (:pdef v)) defval))
 
-(defn extract [app-def map-fn defval]
+(defn app-extract [app-def map-fn defval]
   "Extracts some data from system definition. This is useful for building config/application
   state schemas, configuration defaults etc."
   (proc/process
@@ -25,7 +26,7 @@
     (init {:config config, :old-state old-state, :old-config old-config, :app-config app-config
            :app-state app-state :state state, :init true})))
 
-(defn init [app-def config old-state old-config]
+(defn app-init [app-def config old-state old-config]
   "Initializes or reloads application state. "
   (proc/process
     (assoc PROC-ARGS :proc-fn init-pfn)
@@ -42,7 +43,7 @@
                :shutdown true})
     old-state))
 
-(defn shutdown [app-def config old-state]
+(defn app-shutdown [app-def config old-state]
   (proc/process
     (assoc PROC-ARGS :proc-fn shutdown-pfn)
     app-def {:config config, :old-state old-state}))

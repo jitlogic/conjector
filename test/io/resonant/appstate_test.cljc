@@ -1,6 +1,7 @@
 (ns io.resonant.appstate-test
   (:require
     [clojure.test :refer :all]
+    [io.resonant.conjector :refer [app-component]]
     [io.resonant.conjector.appstate :as cap]))
 
 (defn test-init [{:keys [config old-state]}]
@@ -11,10 +12,10 @@
   (assoc old-state :shut :down))
 
 (def SYSTEM
-  {:a {:init test-init, :shutdown test-shutdown, :schema :bar}
-   :b {:init test-init, :schema :baz, :requires [[:a]]}
-   :c {:init test-init, :schema :bag :requires [[:b]], :before [[:d]]}
-   :d {:init test-init, :shutdown test-shutdown}})
+  {:a (app-component {:init test-init, :shutdown test-shutdown, :schema :bar})
+   :b (app-component {:init test-init, :schema :baz, :requires [[:a]]})
+   :c (app-component {:init test-init, :schema :bag :requires [[:b]], :before [[:d]]})
+   :d (app-component {:init test-init, :shutdown test-shutdown})})
 
 (def CONFIG-1
   {:a {:foo "foo-a"}
@@ -30,12 +31,12 @@
 
 (deftest test-extract-schema
   (is (= {:a :bar, :b :baz, :c :bag, :d :foo}
-         (cap/extract SYSTEM :schema :foo))))
+         (cap/app-extract SYSTEM :schema :foo))))
 
 (deftest test-init-shutdown
-  (let [s1 (cap/init SYSTEM CONFIG-1 {} {})
-        s2 (cap/init SYSTEM CONFIG-2 s1 CONFIG-1)
-        s3 (cap/shutdown SYSTEM CONFIG-2 s2)]
+  (let [s1 (cap/app-init SYSTEM CONFIG-1 {} {})
+        s2 (cap/app-init SYSTEM CONFIG-2 s1 CONFIG-1)
+        s3 (cap/app-shutdown SYSTEM CONFIG-2 s2)]
     (is (= {:a {:foo "foo-a", :bar nil},
             :b {:foo "foo-b", :bar nil},
             :c {:foo "foo-c", :bar nil},
