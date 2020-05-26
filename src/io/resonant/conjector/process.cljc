@@ -70,18 +70,30 @@
    assembling resulting application state. Looks in `sysdef` for nodes satisfying `proc-node?`,
    then processes them in order calculated from dependencies.
    Structure proc-args has following functions:
-    :proc-node? - accepts node returns true if given node qualifies for processing
-    :proc-fn - processing function (see below)
-    :proc-order - accepts paths list processing order, either `identity` or `reverse`
-    :requires - dependencies (list of paths);
-    :before - reverse dependencies (list of paths);
+
+    * `:proc-node?` - accepts node returns true if given node qualifies for processing
+
+    * `:proc-fn` - processing function (see below)
+
+    * `:proc-order` - accepts paths list processing order, either `identity` or `reverse`
+
+    * `:requires` - dependencies (list of paths)
+
+    * `:before` - reverse dependencies (list of paths)
+
    Function proc-fn accepts argument map with following keys:
-    :state - local state structure (built so far)
-    :app-state - full state structure (built so far)
-    :path - path to element currently processed
-    :pdef - processing definition
-    :data - local input data
-    :all-data - all input data"
+
+    * `:state` - local state structure (built so far)
+
+    * `:app-state` - full state structure (built so far)
+
+    * `:path` - path to element currently processed
+
+    * `:pdef` - processing definition
+
+    * `:data` - local input data
+
+    * `:all-data` - all input data"
   (let [proc-seq (process-order proc-args sysdef)]
     (reduce
       (fn [state [proc-fn args]]
