@@ -10,9 +10,10 @@
 (defn- extract-pfn [map-fn defval v]
   (or (map-fn (:pdef v)) defval))
 
-(defn app-extract [app-def map-fn defval]
+(defn app-extract
   "Extracts some data from system definition. This is useful for building config/application
   state schemas, configuration defaults etc."
+  [app-def map-fn defval]
   (proc/process
     (assoc PROC-ARGS :proc-fn (partial extract-pfn map-fn defval))
     app-def nil))
@@ -24,8 +25,9 @@
   (init pdef {:config config, :old-state old-state, :old-config old-config, :app-config app-config
          :app-state app-state :state state, :init true}))
 
-(defn app-init [app-def config old-state old-config]
+(defn app-init
   "Initializes or reloads application state. "
+  [app-def config old-state old-config]
   (proc/process
     (assoc PROC-ARGS :proc-fn init-pfn)
     app-def {:config config, :old-state old-state, :old-config old-config}))
@@ -37,7 +39,9 @@
   (shutdown pdef {:config config, :app-config app-config, :shutdown true,
                   :old-state old-state, :state state :app-state app-state}))
 
-(defn app-shutdown [app-def config old-state]
+(defn app-shutdown
+  "Executes :shutdown handler for all components in reverse order."
+  [app-def config old-state]
   (proc/process
     (assoc PROC-ARGS :proc-fn shutdown-pfn, :proc-order reverse)
     app-def {:config config, :old-state old-state}))

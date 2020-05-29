@@ -10,8 +10,9 @@
 (defn- path-map-children [[p m]]
   (for [[k v] m :when (map? v)] [(conj p k) v]))
 
-(defn- deps-best [dset dp]
+(defn- deps-best
   "Finds best matching dependency from `dset` that satisfies `dp`."
+  [dset dp]
   (let [dpc (count dp)]
     (loop [best nil, [d0 & ds] dset]
       (let [d0c (count d0)]
@@ -29,8 +30,9 @@
           :let [db (map debest (:before dm))]]
       [n {:requires dr, :before db}])))
 
-(defn- exact->pairs [deps]
+(defn- exact->pairs
   "Converts dependency maps into one-way node pairs representing dependency graph"
+  [deps]
   (let [deps (concat
                (for [[p n] deps :let [ds (:requires n)], d ds] [p d])
                (for [[p n] deps :let [ds (:before n)], d ds] [d p]))]
@@ -57,7 +59,7 @@
     (debug 70 :conjector.process.process-order "result data" {:proc-seq proc-seq})
     (proc-order proc-seq)))
 
-(defn process [{:keys [proc-fn proc-order] :or {proc-order identity} :as proc-args} app-def data]
+(defn process
   "Processes input data using rules defined in `app-def` and processing functions from `proc-args`.
    Argument `app-def` is a hierarchical map, `data` is a map of input maps that will be used when
    assembling resulting application state. Looks in `app-def` for nodes satisfying `proc-node?`,
@@ -87,6 +89,7 @@
     * `:data` - local input data
 
     * `:all-data` - all input data"
+  [{:keys [proc-fn proc-order] :or {proc-order identity} :as proc-args} app-def data]
   (let [proc-seq (process-order proc-args app-def)]
     (reduce
       (fn [state [proc-fn args]]

@@ -40,8 +40,9 @@
           (empty? cur) rslt
           :else (assoc rslt :init (if (= 1 (count cur)) (first cur) (cons 'do cur))))))))
 
-(defmacro component [bindings & cargs]
+(defmacro component
   "Creates a component. Automatically attaches dependency information and additional information."
+  [bindings & cargs]
   (let [{:keys [args] :as pb} (parse-component-bindings bindings),
         {:keys [init init-fn shutdown shutdown-fn before requires] :as pa} (parse-component-args cargs)
         rq (vec (map cu/to-path (concat requires (:requires pb))))
