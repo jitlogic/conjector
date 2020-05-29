@@ -39,5 +39,5 @@
 
 (defn app-shutdown [app-def config old-state]
   (proc/process
-    (assoc PROC-ARGS :proc-fn shutdown-pfn)
+    (assoc PROC-ARGS :proc-fn shutdown-pfn, :proc-order reverse)
     app-def {:config config, :old-state old-state}))
