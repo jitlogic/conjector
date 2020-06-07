@@ -28,7 +28,7 @@
       (map? args)
       (let [{:keys [args requires]} (parse-args-map [] args)]
         {:args args, :requires (for [[r0 & rs] requires :when (= :app-state r0)] (vec rs))})
-      :else (ex-info (str "Not proper bindings: " (pr-str bindings)) {:bindings bindings}))))
+      :else (throw (ex-info (str "Not proper bindings: " (pr-str bindings)) {:bindings bindings})))))
 
 (defn- parse-component-args [args]
   (let [[cdef args] (if (string? (first args)) [{:doc (first args)} (rest args)] [{} args])]
