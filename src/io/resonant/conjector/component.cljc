@@ -38,7 +38,10 @@
         (cond
           (keyword? (first cur)) (recur (drop 2 cur) (assoc rslt (first cur) (second cur)))
           (empty? cur) rslt
-          :else (assoc rslt :init (if (= 1 (count cur)) (first cur) (cons 'do cur))))))))
+          :else
+          (do
+            (when (some? (:init rslt)) (throw (ex-info "init code declared as both :init key and body" {})))
+            (assoc rslt :init (if (= 1 (count cur)) (first cur) (cons 'do cur)))))))))
 
 (defmacro component
   "Creates a component. Automatically attaches dependency information and additional information."
