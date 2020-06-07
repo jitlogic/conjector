@@ -22,8 +22,10 @@
                   {app-config :config} :all-data,
                   :keys [pdef state app-state] :as v}]
   (debug 90 :conjector.appstate.init-pfn "initialization PFN" {:init-pfn (:path v)})
-  (init pdef {:config config, :old-state old-state, :old-config old-config, :app-config app-config
-         :app-state app-state :state state, :init true}))
+  (let [rslt (init pdef {:config config, :old-state old-state, :old-config old-config,
+                         :app-config app-config :app-state app-state :state state, :init true})]
+    (debug 90 :conjector.appstate.init-pfn "initialization result" {:rslt rslt})
+    rslt))
 
 (defn app-init
   "Initializes or reloads application state. "
