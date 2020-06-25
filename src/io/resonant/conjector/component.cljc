@@ -31,7 +31,9 @@
       (nil? args) {:args '_}
       :else (throw (ex-info (str "Not proper bindings: " (pr-str bindings)) {:bindings bindings})))))
 
-(defn- parse-component-args [args]
+(defn parse-component-args
+  "Parses component arguments. Identifies and groups init code when necessary."
+  [args]
   (let [[cdef args] (if (string? (first args)) [{:doc (first args)} (rest args)] [{} args])]
     (merge
       cdef
