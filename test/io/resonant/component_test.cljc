@@ -15,7 +15,8 @@
 
 (deftest test-parse-component-bindings
   (is (= '{:args {{:keys [foo bar]} :app-state}, :requires ([:foo] [:bar])}
-         (#'rcm/parse-component-bindings '[{{:keys [foo bar]} :app-state}]))))
+         (#'rcm/parse-component-bindings '[{{:keys [foo bar]} :app-state}])))
+  (is (= '{:args _} (#'rcm/parse-component-bindings []))))
 
 
 (deftest test-parse-component-args
