@@ -1,3 +1,8 @@
+## [0.0.4] - 2020-06-26
+
+* lot of small fixes;
+
+
 ## [0.0.3] - 2020-05-26
 
 * documentation

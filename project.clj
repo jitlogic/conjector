@@ -1,4 +1,4 @@
-(defproject io.resonant/conjector "0.0.4-SNAPSHOT"
+(defproject io.resonant/conjector "0.0.4"
   :description "Application state management with dependency injection (kind of)"
   :url "http://github.com/jitlogic/conjector"
   :license {:name "The MIT License", :url "http://opensource.org/licenses/MIT"}
